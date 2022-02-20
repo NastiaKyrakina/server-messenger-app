@@ -1,0 +1,14 @@
+[{
+  "type": "postgres",
+  "retryAttempts": 2,
+  "host": "postgres",
+  "port": 5432,
+  "username": "messenger_admin",
+  "password": "password",
+  "database": "messenger_db",
+  "entities": ["dist/**/*.entity{.ts,.js}"],
+  "migrations": ["dist/migrations/*{.ts,.js}"],
+  "migrationsTableName": "migrations_history",
+  "synchronize": true,
+  "migrationsRun": true
+}]
