@@ -1,18 +1,19 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserTalkRepository } from './repositories/talks.repository';
-import { Talk } from './entities/talk.entity';
-import { TalkData } from '../models/talk';
-import { DeleteResult } from 'typeorm';
-import { UserTalk } from './entities/user-talk.entity';
-import { TalkRepository } from './repositories/user-talk.repository';
+import { UserTalkRepository } from '../repositories/talks.repository';
+import { Talk } from '../entities/talk.entity';
+import { TalkData } from '../../models/talk';
+import { DeleteResult, SelectQueryBuilder } from 'typeorm';
+import { UserTalk } from '../entities/user-talk.entity';
+import { TalkRepository } from '../repositories/user-talk.repository';
+import { Users } from '../../users-shared/users.entity';
 
 @Injectable()
 export class TalksService {
   constructor(
     @InjectRepository(TalkRepository)
     private talkRepository: TalkRepository,
-    @InjectRepository(UserTalk)
+    @InjectRepository(UserTalkRepository)
     private userTalkRepository: UserTalkRepository,
   ) {}
 
@@ -36,12 +37,40 @@ export class TalksService {
     return this.userTalkRepository.addUserToTalk(userTalk);
   }
 
-  async getUserTalks(userId: number): Promise<any> {
-    const userTalksQuery = this.userTalkRepository
-      .createQueryBuilder('userTalks')
-      .where('userTalks.userId = :userId', { userId })
-      .innerJoinAndSelect('userTalks.talk', 'talk');
+  async getUser(userTalk: Partial<UserTalk>): Promise<any> {
+    return this.userTalkRepository.addUserToTalk(userTalk);
+  }
 
-    return userTalksQuery.getMany();
+  getRawTalk(talkId: string): SelectQueryBuilder<Talk> {
+    return this.talkRepository
+      .createQueryBuilder('talk')
+      .where('talk.id = :talkId', { talkId });
+  }
+
+  async getUserTalks(userId: number): Promise<any> {
+    const talksQuery = this.talkRepository
+      .createQueryBuilder('talk')
+      .leftJoin('talk.talkUsers', 'talkUsers')
+      .where('talkUsers.userId = :userId', { userId })
+      .leftJoinAndMapMany(
+        'talk.talkUsers',
+        UserTalk,
+        'usertalk',
+        'talk.id = usertalk.talkId',
+      )
+      .leftJoinAndMapOne(
+        'usertalk.user',
+        Users,
+        'user',
+        'usertalk.userId = user.id',
+      )
+      .select([
+        'talk',
+        'usertalk.status',
+        'user.id',
+        'user.username',
+        'user.lastLoginDateTime',
+      ]);
+    return talksQuery.getMany();
   }
 }

@@ -1,47 +1,49 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { UserTalkRepository } from '../repositories/talks.repository';
-import { Talk } from '../entities/talk.entity';
-import { TalkData } from '../../models/talk';
-import { DeleteResult } from 'typeorm';
-import { UserTalk } from '../entities/user-talk.entity';
-import { TalkRepository } from '../repositories/user-talk.repository';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { TalksService } from './talks.service';
+import { UsersService } from '../../users-shared/users.service';
+import { UserTalkData } from '../../models/talk';
+import { TalkType } from '../entities/talk.entity';
+import { UserStatus } from '../entities/user-talk.entity';
 
 @Injectable()
-export class TalksService {
+export class UserTalksService {
   constructor(
-    @InjectRepository(TalkRepository)
-    private talkRepository: TalkRepository,
-    @InjectRepository(UserTalk)
-    private userTalkRepository: UserTalkRepository,
+    private talksService: TalksService,
+    private userService: UsersService,
   ) {}
 
-  findAll(): Promise<Talk[]> {
-    return this.talkRepository.find();
+  async createConversation(currentUserId: string, opponentId: string) {
+    const currentUser = await this.userService.findOne(currentUserId);
+    const opponentUser = await this.userService.findOne(opponentId);
+    const talk = await this.talksService.create({ type: TalkType.private });
+    await this.talksService.addUserToTalk({
+      talk,
+      user: currentUser,
+      status: UserStatus.user,
+    });
+
+    await this.talksService.addUserToTalk({
+      talk,
+      user: opponentUser,
+      status: UserStatus.user,
+    });
+
+    return talk;
   }
 
-  findOne(id: string): Promise<Talk> {
-    return this.talkRepository.findOne(id);
-  }
-
-  async create(talk: TalkData): Promise<Talk | null> {
-    return this.talkRepository.createTalk(talk);
-  }
-
-  async delete(id: string): Promise<DeleteResult> {
-    return this.talkRepository.delete(id);
-  }
-
-  async addUserToTalk(userTalk: Partial<UserTalk>): Promise<any> {
-    return this.userTalkRepository.addUserToTalk(userTalk);
-  }
-
-  async getUserTalks(userId: number): Promise<any> {
-    const userTalksQuery = this.userTalkRepository
-      .createQueryBuilder('userTalks')
-      .where('userTalks.userId = :userId', { userId })
-      .innerJoinAndSelect('userTalks.talk', 'talk');
-
-    return userTalksQuery.getMany();
+  async addUserToTalk(userTalk: UserTalkData) {
+    const user = await this.userService.findOne(userTalk.userid);
+    const talk = await this.talksService.findOne(userTalk.talkid);
+    if (!user) {
+      throw new HttpException(`User not found`, HttpStatus.NOT_FOUND);
+    }
+    if (!talk) {
+      throw new HttpException(`User task not found`, HttpStatus.NOT_FOUND);
+    }
+    return this.talksService.addUserToTalk({
+      user,
+      talk,
+      status: userTalk.status,
+    });
   }
 }

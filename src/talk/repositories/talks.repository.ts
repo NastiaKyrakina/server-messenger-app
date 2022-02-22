@@ -1,10 +1,9 @@
 import { EntityRepository, Repository } from 'typeorm';
-import { Talk } from './entities/talk.entity';
-import { TalkData } from '../models/talk';
+import { UserTalk } from '../entities/user-talk.entity';
 
-@EntityRepository(Talk)
-export class TalkRepository extends Repository<Talk> {
-  createTalk = async (talkData: TalkData) => {
+@EntityRepository(UserTalk)
+export class UserTalkRepository extends Repository<UserTalk> {
+  addUserToTalk = async (talkData: Partial<UserTalk>) => {
     return await this.save(talkData);
   };
 }

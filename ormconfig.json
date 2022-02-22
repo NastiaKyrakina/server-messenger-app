@@ -6,9 +6,9 @@
   "username": "messenger_admin",
   "password": "password",
   "database": "messenger_db",
-  "entities": ["dist/**/*.entity{.ts,.js}"],
-  "migrations": ["dist/migrations/*{.ts,.js}"],
+  "entities": ["./dist/**/*.entity{.ts,.js}"],
+  "migrations": ["./dist/migrations/*{.ts,.js}"],
   "migrationsTableName": "migrations_history",
-  "synchronize": true,
+  "synchronize": false,
   "migrationsRun": true
 }]

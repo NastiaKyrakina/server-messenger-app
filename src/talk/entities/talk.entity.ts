@@ -2,8 +2,12 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { UserTalk } from './user-talk.entity';
+import { Message } from './message.entity';
 
 export enum TalkType {
   public,
@@ -15,7 +19,7 @@ export class Talk {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column()
+  @Column({ nullable: true })
   title: string;
 
   @Column({ type: 'enum', enum: TalkType, default: TalkType.private })
@@ -26,4 +30,12 @@ export class Talk {
 
   @Column({ nullable: true })
   imagePath: string;
+
+  @OneToMany((type) => UserTalk, (userTalk) => userTalk.talk)
+  @JoinColumn({ referencedColumnName: 'id' })
+  talkUsers: UserTalk[];
+
+  @OneToMany((type) => Message, (message) => message.talk)
+  @JoinColumn({ referencedColumnName: 'id' })
+  talkMessages: Message[];
 }

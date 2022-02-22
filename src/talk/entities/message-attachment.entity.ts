@@ -1,27 +1,24 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
-import { Talk } from './talk.entity';
-import { Users } from '../../users-shared/users.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Message } from './message.entity';
+
+export enum AttachmentType {
+  image,
+  video,
+  audio,
+  file,
+}
 
 @Entity()
-export class Message {
+export class MessageAttachment {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  text: string;
+  path: string;
 
-  @CreateDateColumn()
-  sendDateTime: Date;
+  @Column({ type: 'enum', enum: AttachmentType, default: AttachmentType.file })
+  type: AttachmentType;
 
-  @ManyToOne((type) => Talk)
-  talk: Talk;
-
-  @ManyToOne((type) => Users)
-  user: Users;
+  @ManyToOne((type) => Message)
+  message: Message;
 }
