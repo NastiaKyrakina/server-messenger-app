@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -13,14 +14,21 @@ import { from, Observable } from 'rxjs';
 import { Talk } from './entities/talk.entity';
 import { TalksService } from './services/talks.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ApiBearerAuth } from '@nestjs/swagger';
-import { CreateMessageBody, TalkData, UserTalkData } from '../models/talk';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  CreateMessageBody,
+  RemoveMessageData,
+  TalkData,
+  UserTalkData,
+  UserTalkDeleteData,
+} from '../models/talk';
 import { UsersService } from '../users-shared/users.service';
 import { UserTalk } from './entities/user-talk.entity';
 import { UserTalksService } from './services/user-talks.service';
 import { MessageService } from './services/message.service';
 import { Message } from './entities/message.entity';
 
+@ApiTags('talks')
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth('access-token')
 @Controller('talks')
@@ -37,15 +45,20 @@ export class TalksController {
     return from(this.talksService.findAll());
   }
 
-  @Get('get/:id')
-  getTalk(@Param('id') id: string): Observable<Talk> {
-    return from(this.talksService.findOne(id));
+  @Get(':talkId')
+  getTalk(@Param('talkId') talkId: string): Observable<Talk> {
+    return from(this.talksService.findOne(talkId));
   }
 
   @Post('')
   async create(@Body() talk: TalkData, @Req() request) {
     const userId = request.user.id;
     return this.talksService.create(talk);
+  }
+
+  @Delete(':talkId')
+  async removeTalk(@Param('talkId') talkId: string) {
+    return this.talksService.delete(talkId);
   }
 
   @Post('conversation/:opponentId')
@@ -57,39 +70,40 @@ export class TalksController {
     return this.userTalksService.createConversation(userId, opponentId);
   }
 
-  @Post('addToTalk')
-  async addUserToTalk(@Body() userTalk: UserTalkData) {
-    return this.userTalksService.addUserToTalk(userTalk);
+  @Post(':talkId/user')
+  async addUserToTalk(
+    @Param('talkId') talkId: string,
+    @Body() userTalk: UserTalkData,
+  ) {
+    return this.userTalksService.addUserToTalk(talkId, userTalk);
   }
 
-  // @Post('conversation')
-  // async addUserToTalk(@Body() userTalk: UserTalkData) {
-  //   return this.userTalksService.addUserToTalk(userTalk);
-  // }
-
-  // @Delete('user/:userId/talk/:tak')
-  // async removeUserFromTalk(@Param('id') id: string) {
-  //   const user = await this.userService.findOne(userTalk.userid);
-  //   const talk = await this.talksService.findOne(userTalk.talkid);
-  //   if (!user) {
-  //     throw new HttpException(`User not found`, HttpStatus.NOT_FOUND);
-  //   }
-  //   if (!talk) {
-  //     throw new HttpException(`User task not found`, HttpStatus.NOT_FOUND);
-  //   }
-  //   return this.talksService.addUserToTalk({
-  //     user,
-  //     talk,
-  //     status: userTalk.status,
-  //   });
-  // }
+  @Delete(':talkId/user/:userId')
+  async removeUserFromTalk(
+    @Param('talkId') talkId: string,
+    @Body() userTalk: UserTalkDeleteData,
+  ) {
+    // const user = await this.userService.findOne(userTalk.userid);
+    // const talk = await this.talksService.findOne(userTalk.talkid);
+    // if (!user) {
+    //   throw new HttpException(`User not found`, HttpStatus.NOT_FOUND);
+    // }
+    // if (!talk) {
+    //   throw new HttpException(`User task not found`, HttpStatus.NOT_FOUND);
+    // }
+    // return this.talksService.addUserToTalk({
+    //   user,
+    //   talk,
+    //   status: userTalk.status,
+    // });
+  }
 
   @Get('user/talks')
   getUserTalks(@Req() request): Observable<UserTalk[]> {
     return from(this.talksService.getUserTalks(request.user.id));
   }
 
-  @Get('talks/:talkId/messages')
+  @Get(':talkId/messages')
   getTalkMessages(
     @Param('talkId') talkId: string,
     @Req() request,
@@ -97,7 +111,7 @@ export class TalksController {
     return from(this.messagesService.getTalkMessages({ talkId }));
   }
 
-  @Post('talks/:talkId/messages')
+  @Post(':talkId/messages')
   createTalkMessage(
     @Param('talkId') talkId: string,
     @Req() request,
@@ -110,5 +124,25 @@ export class TalksController {
         ...body,
       }),
     );
+  }
+
+  @Delete(':talkId/messages')
+  async removeMessageFromTalk(
+    @Param('talkId') talkId: string,
+    @Body() body: RemoveMessageData,
+  ) {
+    // const user = await this.userService.findOne(userTalk.userid);
+    // const talk = await this.talksService.findOne(userTalk.talkid);
+    // if (!user) {
+    //   throw new HttpException(`User not found`, HttpStatus.NOT_FOUND);
+    // }
+    // if (!talk) {
+    //   throw new HttpException(`User task not found`, HttpStatus.NOT_FOUND);
+    // }
+    // return this.talksService.addUserToTalk({
+    //   user,
+    //   talk,
+    //   status: userTalk.status,
+    // });
   }
 }

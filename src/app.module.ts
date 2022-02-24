@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { PassportModule } from '@nestjs/passport';
 import { UsersSharedModule } from './users-shared/users-shared.module';
 import { TalksModule } from './talk/talks.module';
+import { EventsModule } from './events/events.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { TalksModule } from './talk/talks.module';
     UsersSharedModule,
     UsersModule,
     TalksModule,
+    EventsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

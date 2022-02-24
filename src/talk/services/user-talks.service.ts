@@ -31,9 +31,9 @@ export class UserTalksService {
     return talk;
   }
 
-  async addUserToTalk(userTalk: UserTalkData) {
-    const user = await this.userService.findOne(userTalk.userid);
-    const talk = await this.talksService.findOne(userTalk.talkid);
+  async addUserToTalk(talkId: string, userTalk: UserTalkData) {
+    const user = await this.userService.findOne(userTalk.userId);
+    const talk = await this.talksService.findOne(talkId);
     if (!user) {
       throw new HttpException(`User not found`, HttpStatus.NOT_FOUND);
     }

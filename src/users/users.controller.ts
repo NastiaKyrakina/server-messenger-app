@@ -21,12 +21,12 @@ import { ListQuery } from '../models/query';
 export class UsersController {
   constructor(private usersService: UsersService) {}
 
-  @Get('list')
+  @Get('')
   findAll(@Query() query: ListQuery): Observable<Users[]> {
     return from(this.usersService.findWithParams(query));
   }
 
-  @Delete('delete/:id')
+  @Delete(':id')
   deleteUser(@Param('id') id: string): Observable<DeleteResult> {
     return from(this.usersService.delete(id));
   }

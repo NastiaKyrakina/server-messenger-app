@@ -28,7 +28,9 @@ export class Message {
   @Column()
   userId: string;
 
-  @ManyToOne((type) => Talk)
+  @ManyToOne((type) => Talk, {
+    onDelete: 'CASCADE',
+  })
   @JoinColumn({ name: 'talkId' })
   talk: Talk;
 

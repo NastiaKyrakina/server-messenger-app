@@ -46,17 +46,16 @@ export class MessageService {
   // }
 
   async getTalkMessages(params: MessageData): Promise<any> {
+    console.log(params.talkId);
     const talksQuery = this.messagesRepository
       .createQueryBuilder('message')
-      .where('message.talkId = :talkId', { talkId: params.talkId })
-      .skip(params.offset || 0)
-      .limit(params.limit || DEFAULT_LIMIT);
+      .where('message.talkId = :talkId', { talkId: params.talkId });
     return talksQuery.getMany();
   }
 
   async createMessage(createMessage: CreateMessageData) {
     const user = await this.userService.findOne(createMessage.userId);
-    const talk = await this.talksService.findOne(createMessage.userId);
+    const talk = await this.talksService.findOne(createMessage.talkId);
     return this.messagesRepository.addMessage({
       user,
       talk,

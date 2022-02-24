@@ -13,6 +13,7 @@ import { TalkRepository } from './repositories/user-talk.repository';
 import { MessageService } from './services/message.service';
 import { MessagesRepository } from './repositories/message.repository';
 import { Message } from './entities/message.entity';
+import { MessageGateway } from './message.gateway';
 
 @Module({
   imports: [
@@ -28,7 +29,7 @@ import { Message } from './entities/message.entity';
     AuthModule,
     UsersSharedModule,
   ],
-  providers: [TalksService, UserTalksService, MessageService],
+  providers: [TalksService, UserTalksService, MessageService, MessageGateway],
   controllers: [TalksController],
 })
 export class TalksModule {}

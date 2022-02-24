@@ -24,6 +24,11 @@ export class AuthService {
     await this.usersService.updateLoginDateTime(validatedUser.id);
     const payload = { username: validatedUser.username, sub: validatedUser.id };
     return {
+      user: {
+        username: validatedUser.username,
+        lastLoginDateTime: validatedUser.lastLoginDateTime,
+        registrationDate: validatedUser.registration_date,
+      },
       access_token: this.jwtService.sign(payload, {
         secret: jwtConstants.secret,
         privateKey: jwtConstants.secret,

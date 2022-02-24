@@ -18,13 +18,15 @@ export class TalkData {
 
 export class UserTalkData {
   @ApiProperty()
-  userid: string;
-
-  @ApiProperty()
-  talkid: string;
+  userId: string;
 
   @ApiProperty({ type: 'enum', enum: UserStatus, default: UserStatus.user })
   status: UserStatus;
+}
+
+export class UserTalkDeleteData {
+  @ApiProperty()
+  userId: string;
 }
 
 export class ConversationParams {

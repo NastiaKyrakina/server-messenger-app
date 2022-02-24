@@ -15,7 +15,9 @@ export class UserTalk {
   @Column({ type: 'enum', enum: UserStatus, default: UserStatus.user })
   status: UserStatus;
 
-  @ManyToOne((type) => Talk)
+  @ManyToOne((type) => Talk, {
+    onDelete: 'CASCADE',
+  })
   talk: Talk;
 
   @ManyToOne((type) => Users)
