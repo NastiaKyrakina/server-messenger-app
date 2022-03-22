@@ -29,7 +29,7 @@ export class AuthService {
         lastLoginDateTime: validatedUser.lastLoginDateTime,
         registrationDate: validatedUser.registration_date,
       },
-      access_token: this.jwtService.sign(payload, {
+      accessToken: this.jwtService.sign(payload, {
         secret: jwtConstants.secret,
         privateKey: jwtConstants.secret,
       }),
