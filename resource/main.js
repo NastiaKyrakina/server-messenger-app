@@ -1,8 +1,15 @@
+// connectToSockets();
+//
+// function connectToSockets() {
+//   this.socket = io('http://localhost:3000');
+//   this.socket.on('connect', () => {});
+// }
+
 const app = new Vue({
   el: '#app',
   data: {
     title: 'Messenger App',
-    name: '',
+    name: 'anna',
     text: '',
     selected: 'general',
     messages: [],
@@ -55,10 +62,11 @@ const app = new Vue({
       return this.rooms[this.activeRoom];
     },
   },
+
   created() {
     console.log('created');
     this.activeRoom = this.selected;
-    this.socket = io('http://localhost:3000');
+    this.socket = io('ws://localhost:3000');
     console.log(this.socket);
     this.socket.on('msgToClient', (message) => {
       console.log(message);

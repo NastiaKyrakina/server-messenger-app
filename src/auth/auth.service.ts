@@ -25,6 +25,7 @@ export class AuthService {
     const payload = { username: validatedUser.username, sub: validatedUser.id };
     return {
       user: {
+        id: validatedUser.id,
         username: validatedUser.username,
         lastLoginDateTime: validatedUser.lastLoginDateTime,
         registrationDate: validatedUser.registration_date,

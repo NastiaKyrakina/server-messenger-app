@@ -21,32 +21,7 @@ export class MessageService {
     private userService: UsersService,
   ) {}
 
-  // findAll(): Promise<Talk[]> {
-  //   return this.talkRepository.find();
-  // }
-  //
-  // findOne(id: string): Promise<Talk> {
-  //   return this.talkRepository.findOne(id);
-  // }
-  //
-  // async create(talk: TalkData): Promise<Talk | null> {
-  //   return this.talkRepository.createTalk(talk);
-  // }
-  //
-  // async delete(id: string): Promise<DeleteResult> {
-  //   return this.talkRepository.delete(id);
-  // }
-  //
-  // async addUserToTalk(userTalk: Partial<UserTalk>): Promise<any> {
-  //   return this.userTalkRepository.addUserToTalk(userTalk);
-  // }
-
-  // async getUsersConversation(currentUserId: string, opponentId: string) {
-  //   return this.userTalkRepository.find({});
-  // }
-
   async getTalkMessages(params: MessageData): Promise<any> {
-    console.log(params.talkId);
     const talksQuery = this.messagesRepository
       .createQueryBuilder('message')
       .where('message.talkId = :talkId', { talkId: params.talkId });
@@ -63,10 +38,9 @@ export class MessageService {
     });
   }
 
-  // async removeMessage(userId: string, removeMessage: RemoveMessageData) {
-  //   const message = await this.messagesRepository.findOne({
-  //     id: +removeMessage.messageId,
-  //     talk: +removeMessage.talkId,
-  //   });
-  // }
+  async removeMessage(userId: string, removeMessage: RemoveMessageData) {
+    return this.messagesRepository.delete({
+      id: +removeMessage.messageId,
+    });
+  }
 }

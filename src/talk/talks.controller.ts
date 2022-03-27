@@ -1,29 +1,13 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Post,
-  Query,
-  Req,
-  UseGuards,
-} from '@nestjs/common';
-import { ListQuery } from '../models/query';
+import { Body, Controller, Delete, Get, Param, Post, Query, Req, UseGuards } from '@nestjs/common';
+import { TalkListQuery, TalkListQueryExtended } from '../models/query';
 import { from, Observable } from 'rxjs';
-import { Talk } from './entities/talk.entity';
+import { Talk, TalkType } from './entities/talk.entity';
 import { TalksService } from './services/talks.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import {
-  CreateMessageBody,
-  RemoveMessageData,
-  TalkData,
-  UserTalkData,
-  UserTalkDeleteData,
-} from '../models/talk';
+import { CreateMessageBody, RemoveMessageData, TalkData, UserTalkDeleteData } from '../models/talk';
 import { UsersService } from '../users-shared/users.service';
-import { UserTalk } from './entities/user-talk.entity';
+import { UserStatus, UserTalk } from './entities/user-talk.entity';
 import { UserTalksService } from './services/user-talks.service';
 import { MessageService } from './services/message.service';
 import { Message } from './entities/message.entity';
@@ -41,8 +25,15 @@ export class TalksController {
   ) {}
 
   @Get('')
-  findAll(@Query() query: ListQuery): Observable<Talk[]> {
-    return from(this.talksService.findAll());
+  findAll(@Query() query: TalkListQueryExtended): Observable<Talk[]> {
+    return from(this.talksService.findWithParams(query));
+  }
+
+  @Get('/public')
+  findAllPublic(@Query() query: TalkListQuery): Observable<Talk[]> {
+    return from(
+      this.talksService.findWithParams({ ...query, type: TalkType.public }),
+    );
   }
 
   @Get(':talkId')
@@ -53,7 +44,7 @@ export class TalksController {
   @Post('')
   async create(@Body() talk: TalkData, @Req() request) {
     const userId = request.user.id;
-    return this.talksService.create(talk);
+    return this.userTalksService.createWithUser(talk, userId);
   }
 
   @Delete(':talkId')
@@ -71,11 +62,13 @@ export class TalksController {
   }
 
   @Post(':talkId/user')
-  async addUserToTalk(
-    @Param('talkId') talkId: string,
-    @Body() userTalk: UserTalkData,
-  ) {
-    return this.userTalksService.addUserToTalk(talkId, userTalk);
+  async addUserToTalk(@Param('talkId') talkId: string, @Req() request) {
+    const userId = request.user.id;
+    await this.userTalksService.addUserToTalk(talkId, {
+      userId,
+      status: UserStatus.user,
+    });
+    return from(this.talksService.findOne(talkId));
   }
 
   @Delete(':talkId/user/:userId')
@@ -129,20 +122,10 @@ export class TalksController {
   @Delete(':talkId/messages')
   async removeMessageFromTalk(
     @Param('talkId') talkId: string,
+    @Req() request,
     @Body() body: RemoveMessageData,
   ) {
-    // const user = await this.userService.findOne(userTalk.userid);
-    // const talk = await this.talksService.findOne(userTalk.talkid);
-    // if (!user) {
-    //   throw new HttpException(`User not found`, HttpStatus.NOT_FOUND);
-    // }
-    // if (!talk) {
-    //   throw new HttpException(`User task not found`, HttpStatus.NOT_FOUND);
-    // }
-    // return this.talksService.addUserToTalk({
-    //   user,
-    //   talk,
-    //   status: userTalk.status,
-    // });
+    const userId = request.user.id;
+    return this.messagesService.removeMessage(userId, body);
   }
 }

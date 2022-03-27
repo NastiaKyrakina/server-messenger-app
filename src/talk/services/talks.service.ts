@@ -7,6 +7,8 @@ import { DeleteResult, SelectQueryBuilder } from 'typeorm';
 import { UserTalk } from '../entities/user-talk.entity';
 import { TalkRepository } from '../repositories/user-talk.repository';
 import { Users } from '../../users-shared/users.entity';
+import { TalkListQueryExtended } from '../../models/query';
+import { DEFAULT_LIMIT } from '../../constants/global-constants';
 
 @Injectable()
 export class TalksService {
@@ -21,8 +23,29 @@ export class TalksService {
     return this.talkRepository.find();
   }
 
+  findWithParams(query: TalkListQueryExtended): Promise<Talk[]> {
+    let talksQuery = this.talkRepository
+      .createQueryBuilder('talk')
+      .offset(query.offset || 0)
+      .limit(query.limit || DEFAULT_LIMIT);
+
+    if (Number.isInteger(query.type)) {
+      talksQuery = talksQuery.where('talk.type = :type', {
+        type: query.type,
+      });
+    }
+
+    if (query.title) {
+      talksQuery = talksQuery.where('LOWER(talk.title) like :title', {
+        title: `%${query.title.toLowerCase()}%`,
+      });
+    }
+
+    return talksQuery.getMany();
+  }
+
   findOne(id: string): Promise<Talk> {
-    return this.talkRepository.findOne(id);
+    return this.talkRepository.findOne(id, { relations: ['talkUsers'] });
   }
 
   async create(talk: TalkData): Promise<Talk | null> {

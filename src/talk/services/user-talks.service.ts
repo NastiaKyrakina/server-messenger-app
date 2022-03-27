@@ -1,8 +1,8 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { TalksService } from './talks.service';
 import { UsersService } from '../../users-shared/users.service';
-import { UserTalkData } from '../../models/talk';
-import { TalkType } from '../entities/talk.entity';
+import { TalkData, UserTalkData } from '../../models/talk';
+import { Talk, TalkType } from '../entities/talk.entity';
 import { UserStatus } from '../entities/user-talk.entity';
 
 @Injectable()
@@ -12,23 +12,35 @@ export class UserTalksService {
     private userService: UsersService,
   ) {}
 
+  async createWithUser(talk: TalkData, userId: string): Promise<Talk | null> {
+    console.log(talk);
+    const newTalk = await this.talksService.create(talk);
+    const currentUser = await this.userService.findOne(userId);
+    const talkOwner = await this.talksService.addUserToTalk({
+      talk: newTalk,
+      user: currentUser,
+      status: UserStatus.admin,
+    });
+    return { ...newTalk, talkUsers: [talkOwner] };
+  }
+
   async createConversation(currentUserId: string, opponentId: string) {
     const currentUser = await this.userService.findOne(currentUserId);
     const opponentUser = await this.userService.findOne(opponentId);
     const talk = await this.talksService.create({ type: TalkType.private });
-    await this.talksService.addUserToTalk({
+    const userInTalk1 = await this.talksService.addUserToTalk({
       talk,
       user: currentUser,
       status: UserStatus.user,
     });
 
-    await this.talksService.addUserToTalk({
+    const userInTalk2 = await this.talksService.addUserToTalk({
       talk,
       user: opponentUser,
       status: UserStatus.user,
     });
 
-    return talk;
+    return { ...talk, talkUsers: [userInTalk1, userInTalk2] };
   }
 
   async addUserToTalk(talkId: string, userTalk: UserTalkData) {
