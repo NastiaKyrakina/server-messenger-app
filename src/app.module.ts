@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule } from '@nestjs/config';
 import { UsersModule } from './users/users.module';
@@ -9,6 +8,10 @@ import { PassportModule } from '@nestjs/passport';
 import { UsersSharedModule } from './users-shared/users-shared.module';
 import { TalksModule } from './talk/talks.module';
 import { EventsModule } from './events/events.module';
+// run migrations
+// docker exec -t -i <container id> /bin/sh
+// npx typeorm migration:generate -n <MigrationName> -d src/migrations
+//  node --require ts-node/register ./node_modules/typeorm/cli.js migrations:run
 
 @Module({
   imports: [
@@ -22,11 +25,5 @@ import { EventsModule } from './events/events.module';
     EventsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}
-
-// run migrations
-// docker exec -t -i 91f62dfd84f4 /bin/sh
-// npx typeorm migration:generate -n Talk -d src/migrations
-//  node --require ts-node/register ./node_modules/typeorm/cli.js migrations:run

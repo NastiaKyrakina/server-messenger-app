@@ -40,6 +40,22 @@ export class EventsGateway {
     });
   }
 
+  @SubscribeMessage('removeMsgToServer')
+  public removeMessage(
+    client: Socket,
+    data: { talk: string; user: string; messageId: string },
+  ): boolean {
+    this.messageService.removeMessage(data.user, {
+      messageId: data.messageId,
+    });
+    this.logger.log(`handleMessage: ${client.id} ${data.messageId}`);
+    return this.server.to(data.talk).emit('removeMsgToClient', {
+      talkId: data.talk,
+      userId: data.user,
+      id: data.messageId,
+    });
+  }
+
   @SubscribeMessage('joinTalk')
   public joinRoom(client: Socket, data: { talk: string; user: number }): void {
     this.logger.log(`join talk: ${data.talk}`);

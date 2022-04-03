@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserTalkRepository } from '../repositories/talks.repository';
-import { Talk } from '../entities/talk.entity';
+import { Talk, TalkType } from '../entities/talk.entity';
 import { TalkData } from '../../models/talk';
-import { DeleteResult, SelectQueryBuilder } from 'typeorm';
+import { DeleteResult } from 'typeorm';
 import { UserTalk } from '../entities/user-talk.entity';
 import { TalkRepository } from '../repositories/user-talk.repository';
 import { Users } from '../../users-shared/users.entity';
@@ -60,14 +60,11 @@ export class TalksService {
     return this.userTalkRepository.addUserToTalk(userTalk);
   }
 
-  async getUser(userTalk: Partial<UserTalk>): Promise<any> {
-    return this.userTalkRepository.addUserToTalk(userTalk);
-  }
-
-  getRawTalk(talkId: string): SelectQueryBuilder<Talk> {
-    return this.talkRepository
-      .createQueryBuilder('talk')
-      .where('talk.id = :talkId', { talkId });
+  async getUserInTalk(
+    talkId: string,
+    userId: string,
+  ): Promise<UserTalk | null> {
+    return this.userTalkRepository.findOne({ where: { talkId, userId } });
   }
 
   async getUserTalks(userId: number): Promise<any> {
@@ -95,5 +92,21 @@ export class TalksService {
         'user.lastLoginDateTime',
       ]);
     return talksQuery.getMany();
+  }
+
+  async getUserConversation(userId: string, opponentId: string): Promise<any> {
+    const talksQuery = this.talkRepository
+      .createQueryBuilder('talk')
+      .where('talk.type = :type', { type: TalkType.private })
+      .leftJoin('talk.talkUsers', 'talkUsers')
+      .where('talkUsers.userId = :userId  AND talk.type = :type', {
+        userId,
+        type: TalkType.private,
+      })
+      .where('talkUsers.userId = :opponentId AND talk.type = :type', {
+        opponentId,
+        type: TalkType.private,
+      });
+    return talksQuery.getOne();
   }
 }

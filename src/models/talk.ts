@@ -69,8 +69,5 @@ export class CreateMessageBody {
 
 export class RemoveMessageData {
   @ApiProperty()
-  talkId: string;
-
-  @ApiProperty()
   messageId: string;
 }
