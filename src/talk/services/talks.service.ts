@@ -84,6 +84,7 @@ export class TalksService {
         'user',
         'usertalk.userId = user.id',
       )
+      .orderBy('talk.creationDateTime')
       .select([
         'talk',
         'usertalk.status',
@@ -95,18 +96,16 @@ export class TalksService {
   }
 
   async getUserConversation(userId: string, opponentId: string): Promise<any> {
-    const talksQuery = this.talkRepository
-      .createQueryBuilder('talk')
-      .where('talk.type = :type', { type: TalkType.private })
-      .leftJoin('talk.talkUsers', 'talkUsers')
-      .where('talkUsers.userId = :userId  AND talk.type = :type', {
+    const talkUsersQuery = this.userTalkRepository
+      .createQueryBuilder('userTalk')
+      .where('userTalk.userId = :userId', {
         userId,
-        type: TalkType.private,
       })
-      .where('talkUsers.userId = :opponentId AND talk.type = :type', {
-        opponentId,
-        type: TalkType.private,
-      });
-    return talksQuery.getOne();
+      .leftJoinAndSelect('userTalk.talk', 'talk')
+      .andWhere('userTalk.userId = :userId AND talk.type = :type', { userId, type: TalkType.private })
+      .leftJoinAndSelect('talk.talkUsers', 'talkUsers')
+      .andWhere('talkUsers.userId = :opponentId', { opponentId });
+
+    return talkUsersQuery.getOne();
   }
 }

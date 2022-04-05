@@ -24,7 +24,8 @@ export class MessageService {
   async getTalkMessages(params: MessageData): Promise<any> {
     const talksQuery = this.messagesRepository
       .createQueryBuilder('message')
-      .where('message.talkId = :talkId', { talkId: params.talkId });
+      .where('message.talkId = :talkId', { talkId: params.talkId })
+      .orderBy('message.sendDateTime');
     return talksQuery.getMany();
   }
 

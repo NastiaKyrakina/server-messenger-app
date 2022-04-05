@@ -33,7 +33,6 @@ export class UserTalksService {
       currentUserId,
       opponentId,
     );
-    console.log('conversation', conversation);
     if (conversation) {
       return conversation;
     }
